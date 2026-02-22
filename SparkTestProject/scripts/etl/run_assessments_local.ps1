@@ -11,8 +11,8 @@ if (-not $env:SPARK_HOME) {
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 Set-Location $projectRoot
 
-# Write-Host 'Building jar with Gradle...' -ForegroundColor Cyan
-# gradle clean jar
+Write-Host 'Building jar with Gradle...' -ForegroundColor Cyan
+gradle clean jar
 
 $jarPath = Get-ChildItem -Path (Join-Path $projectRoot 'build\libs') -Filter '*.jar' |
     Sort-Object LastWriteTime -Descending |
@@ -29,7 +29,6 @@ if (-not (Test-Path $sparkSubmit)) {
     throw "spark-submit not found at $sparkSubmit"
 }
 
-<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
 $outputBasePathWindows = Join-Path $projectRoot 'src\main\resources'
 if (-not (Test-Path (Join-Path $outputBasePathWindows 'customer_data.csv'))) {
     throw "customer_data.csv not found under $outputBasePathWindows"
@@ -38,8 +37,6 @@ if (-not (Test-Path (Join-Path $outputBasePathWindows 'customer_data.csv'))) {
 # Spark/Hadoop on Windows handles forward slashes more reliably when passed through JVM system properties.
 $outputBasePathForJvm = $outputBasePathWindows -replace '\\', '/'
 
-=======
->>>>>>> feature/QDE_project
 $classes = @(
     'com.quantexa.assessments.accounts.AccountAssessment',
     'com.quantexa.assessments.customerAddresses.CustomerAddress',
