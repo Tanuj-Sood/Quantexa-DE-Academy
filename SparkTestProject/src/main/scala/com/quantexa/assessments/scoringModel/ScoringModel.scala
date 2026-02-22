@@ -71,7 +71,7 @@ object ScoringModel extends App {
 
   val linkedToBVICustomerCount = scoringModelDS.filter(scoringModel => scoringModel.linkToBVI).count()
 
-  scoringModelDS.show(1000, truncate = false)
+  scoringModelDS.show(1000,false)
   println(s"Number of customers linked to British Virgin Islands: $linkedToBVICustomerCount")
 
   //END GIVEN CODE
