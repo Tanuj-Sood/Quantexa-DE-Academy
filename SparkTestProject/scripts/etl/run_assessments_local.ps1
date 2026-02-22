@@ -29,6 +29,11 @@ if (-not (Test-Path $sparkSubmit)) {
     throw "spark-submit not found at $sparkSubmit"
 }
 
+$defaultHadoopHome = 'C:\tools\hadoop'
+if (-not $env:HADOOP_HOME -and (Test-Path $defaultHadoopHome)) {
+    $env:HADOOP_HOME = $defaultHadoopHome
+}
+
 $outputBasePathWindows = Join-Path $projectRoot 'src\main\resources'
 if (-not (Test-Path (Join-Path $outputBasePathWindows 'customer_data.csv'))) {
     throw "customer_data.csv not found under $outputBasePathWindows"
@@ -36,6 +41,13 @@ if (-not (Test-Path (Join-Path $outputBasePathWindows 'customer_data.csv'))) {
 
 # Spark/Hadoop on Windows handles forward slashes more reliably when passed through JVM system properties.
 $outputBasePathForJvm = $outputBasePathWindows -replace '\\', '/'
+$env:QDE_OUTPUT_BASE_PATH = $outputBasePathForJvm
+
+$driverJavaOptions = "-Dqde.output.base.path=$outputBasePathForJvm"
+if ($env:HADOOP_HOME) {
+    $hadoopHomeForJvm = $env:HADOOP_HOME -replace '\\', '/'
+    $driverJavaOptions = "$driverJavaOptions -Dhadoop.home.dir=$hadoopHomeForJvm"
+}
 
 $classes = @(
     'com.quantexa.assessments.accounts.AccountAssessment',
@@ -45,7 +57,7 @@ $classes = @(
 
 foreach ($className in $classes) {
     Write-Host "Running $className" -ForegroundColor Yellow
-    & $sparkSubmit --class $className --master local[*] --driver-java-options "-Dqde.output.base.path=$outputBasePathForJvm" $jarPath
+    & $sparkSubmit --class $className --master local[*] --driver-java-options $driverJavaOptions $jarPath
 }
 
 Write-Host "Done. Parquet outputs are under $outputBasePathWindows" -ForegroundColor Green

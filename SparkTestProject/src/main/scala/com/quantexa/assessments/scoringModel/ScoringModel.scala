@@ -54,9 +54,19 @@ object ScoringModel extends App {
                            linkToBVI: Boolean
                          )
 
-  val customerDocumentDS: Dataset[CustomerDocument] =
-    spark.read.parquet(s"$outputBasePath/customerDocument.parquet").as[CustomerDocument]
+  val customerDocumentPath = s"$outputBasePath/customerDocument.parquet"
+  val customerDocumentDirectory = new java.io.File(customerDocumentPath)
+  val customerDocumentFiles = Option(customerDocumentDirectory.listFiles()).getOrElse(Array.empty)
+  val hasCustomerDocumentParquetData =
+    customerDocumentDirectory.exists() && customerDocumentFiles.exists(file => file.getName.startsWith("part-"))
 
+  require(
+    hasCustomerDocumentParquetData,
+    s"Expected parquet output at $customerDocumentPath. Run CustomerAddress first to generate customerDocument.parquet"
+  )
+
+  val customerDocumentDS: Dataset[CustomerDocument] =
+    spark.read.parquet(customerDocumentPath).as[CustomerDocument]
 
   val scoringModelDS: Dataset[ScoringModel] =
     customerDocumentDS

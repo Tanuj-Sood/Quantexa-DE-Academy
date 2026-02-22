@@ -35,11 +35,8 @@ This will:
 3. Run `CustomerAddress`
 4. Run `ScoringModel`
 
-<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
 The runners pass `-Dqde.output.base.path=<absolute project src/main/resources path>` so reads/writes are stable regardless of your current terminal folder.
 
-=======
->>>>>>> feature/QDE_project
 ## Build and run all assessments (bash)
 
 ```bash
@@ -55,7 +52,6 @@ The jobs write parquet outputs to:
 - `src/main/resources/customerDocument.parquet`
 
 The scoring job reads the `customerDocument.parquet` file and prints the BVI-linked customer count.
-<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
 
 
 ## Windows troubleshooting
@@ -68,5 +64,6 @@ If you see `Failed to locate the winutils binary`, run the install script again 
 ```powershell
 .\scripts\windows\install-qde-prereqs.ps1
 ```
-=======
->>>>>>> feature/QDE_project
+
+
+If you see `Unable to infer schema for Parquet` in Assignment 2, the expected `customerAccountOutputDS.parquet` location is missing parquet part files. Run Assessment 1 first (or re-run the full ETL runner) so the parquet is generated in `src/main/resources/customerAccountOutputDS.parquet`.
