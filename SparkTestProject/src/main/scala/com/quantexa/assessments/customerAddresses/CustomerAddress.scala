@@ -107,9 +107,15 @@ object CustomerAddress extends App {
   }
 
 
+<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
   val addressDF: DataFrame = spark.read.option("header", "true").csv(s"$outputBasePath/address_data.csv")
 
   val customerAccountDS = spark.read.parquet(s"$outputBasePath/customerAccountOutputDS.parquet").as[CustomerAccountOutput]
+=======
+  val addressDF: DataFrame = spark.read.option("header", "true").csv("src/main/resources/address_data.csv")
+
+  val customerAccountDS = spark.read.parquet("src/main/resources/customerAccountOutputDS.parquet").as[CustomerAccountOutput]
+>>>>>>> feature/QDE_project
 
   val addressRawDS: Dataset[AddressRawData] = addressDF.as[AddressRawData]
 
@@ -152,8 +158,13 @@ object CustomerAddress extends App {
           )
       }
 
+<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
   customerDocument.show(1000, truncate = false)
   customerDocument.write.mode("overwrite").parquet(s"$outputBasePath/customerDocument.parquet")
+=======
+  customerDocument.show(1000,false)
+  customerDocument.write.mode("overwrite").parquet("src/main/resources/customerDocument.parquet")
+>>>>>>> feature/QDE_project
 
   //END GIVEN CODE
 
