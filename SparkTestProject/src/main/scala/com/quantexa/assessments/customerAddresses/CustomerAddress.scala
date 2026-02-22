@@ -147,7 +147,7 @@ object CustomerAddress extends App {
           )
       }
 
-  customerDocument.show(1000, truncate = false)
+  customerDocument.show(1000,false)
   customerDocument.write.mode("overwrite").parquet("src/main/resources/customerDocument.parquet")
 
   //END GIVEN CODE
