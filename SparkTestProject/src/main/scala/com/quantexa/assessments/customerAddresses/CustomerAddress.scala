@@ -106,6 +106,53 @@ object CustomerAddress extends App {
     )
   }
 
+  val addressDF: DataFrame = spark.read.option("header", "true").csv(s"$outputBasePath/address_data.csv")
+
+  val customerAccountDS = spark.read.parquet(s"$outputBasePath/customerAccountOutputDS.parquet").as[CustomerAccountOutput]
+
+
+  val addressRawDS: Dataset[AddressRawData] = addressDF.as[AddressRawData]
+
+  val groupedAddressByCustomer: Dataset[(String, Seq[AddressData])] =
+    addressRawDS
+      .map { addressRaw =>
+        AddressData(
+          addressId = addressRaw.addressId,
+          customerId = addressRaw.customerId,
+          address = addressRaw.address,
+          number = None,
+          road = None,
+          city = None,
+          country = None
+        )
+      }
+      .groupByKey(address => address.customerId)
+      .mapGroups {
+        case (customerId, groupedAddress) =>
+          customerId -> groupedAddress.toSeq
+      }
+
+  val customerDocument: Dataset[CustomerDocument] =
+    customerAccountDS
+      .joinWith(
+        groupedAddressByCustomer,
+        customerAccountDS("customerId") === groupedAddressByCustomer("_1"),
+        "left_outer"
+      )
+      .map {
+        case (customerAccount, groupedAddress) =>
+          val unparsedAddress = Option(groupedAddress).map(_._2).getOrElse(Seq.empty[AddressData])
+
+          CustomerDocument(
+            customerId = customerAccount.customerId,
+            forename = customerAccount.forename,
+            surname = customerAccount.surname,
+            accounts = customerAccount.accounts,
+            address = addressParser(unparsedAddress)
+          )
+      }
+  customerDocument.show(1000, truncate = false)
+  customerDocument.write.mode("overwrite").parquet(s"$outputBasePath/customerDocument.parquet")
 
   val addressDF: DataFrame = spark.read.option("header", "true").csv(s"$outputBasePath/address_data.csv")
 

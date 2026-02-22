@@ -1,3 +1,7 @@
+$env:JAVA_HOME = "D:\goldenversions\jdk8u482-b08"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+java -version
+
 $ErrorActionPreference = 'Stop'
 
 if (-not $env:SPARK_HOME) {
