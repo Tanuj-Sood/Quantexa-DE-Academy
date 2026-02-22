@@ -88,20 +88,17 @@ object CustomerAddress extends App {
 
 
   def addressParser(unparsedAddress: Seq[AddressData]): Seq[AddressData] = {
-    unparsedAddress.map { address =>
-      val split = address.address.split(", ").toSeq
-      val addressNumber = split.headOption.flatMap(value => scala.util.Try(value.toInt).toOption)
-      val road = split.lift(1)
-      val city = split.lift(2)
-      val country = split.lift(3)
+    unparsedAddress.map(address => {
+      val split = address.address.split(", ")
 
       address.copy(
-        number = addressNumber,
-        road = road,
-        city = city,
-        country = country
+        number = Some(split(0).toInt),
+        road = Some(split(1)),
+        city = Some(split(2)),
+        country = Some(split(3))
       )
     }
+    )
   }
 
 
