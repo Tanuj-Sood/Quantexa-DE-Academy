@@ -1,10 +1,7 @@
-<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
-=======
 $env:JAVA_HOME = "D:\goldenversions\jdk8u482-b08"
 $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 java -version
 
->>>>>>> feature/QDE_project
 $ErrorActionPreference = 'Stop'
 
 if (-not $env:SPARK_HOME) {
@@ -14,13 +11,8 @@ if (-not $env:SPARK_HOME) {
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 Set-Location $projectRoot
 
-<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
-Write-Host 'Building jar with Gradle...' -ForegroundColor Cyan
-gradle clean jar
-=======
 # Write-Host 'Building jar with Gradle...' -ForegroundColor Cyan
 # gradle clean jar
->>>>>>> feature/QDE_project
 
 $jarPath = Get-ChildItem -Path (Join-Path $projectRoot 'build\libs') -Filter '*.jar' |
     Sort-Object LastWriteTime -Descending |
@@ -56,14 +48,7 @@ $classes = @(
 
 foreach ($className in $classes) {
     Write-Host "Running $className" -ForegroundColor Yellow
-<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
     & $sparkSubmit --class $className --master local[*] --driver-java-options "-Dqde.output.base.path=$outputBasePathForJvm" $jarPath
 }
 
 Write-Host "Done. Parquet outputs are under $outputBasePathWindows" -ForegroundColor Green
-=======
-    & $sparkSubmit --class $className --master local[*] $jarPath
-}
-
-Write-Host 'Done. Parquet outputs are under src\main\resources\' -ForegroundColor Green
->>>>>>> feature/QDE_project
