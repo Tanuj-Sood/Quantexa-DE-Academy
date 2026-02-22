@@ -3,7 +3,6 @@ package com.quantexa.assessments.accounts
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
-
 /***
   * A common problem we face at Quantexa is having lots of disjointed raw sources of data and having to aggregate and collect
   * relevant pieces of information into hierarchical case classes which we refer to as Documents. This exercise simplifies
@@ -49,9 +48,9 @@ object AccountAssessment extends App {
   Logger.getRootLogger.setLevel(Level.WARN)
 
   //Create DataFrames of sources
-  val customerDF: DataFrame = spark.read.option("header","true")
+  val customerDF: DataFrame = spark.read.option("header", "true")
     .csv("src/main/resources/customer_data.csv")
-  val accountDF = spark.read.option("header","true")
+  val accountDF = spark.read.option("header", "true")
     .csv("src/main/resources/account_data.csv")
 
   case class CustomerData(
@@ -81,13 +80,47 @@ object AccountAssessment extends App {
 
   //Create Datasets of sources
   val customerDS: Dataset[CustomerData] = customerDF.as[CustomerData]
-  val accountDS: Dataset[AccountData] = accountDF.withColumn("balance",'balance.cast("long")).as[AccountData]
+  val accountDS: Dataset[AccountData] = accountDF.withColumn("balance", 'balance.cast("long")).as[AccountData]
 
   customerDS.show
   accountDS.show
 
-//END GIVEN CODE
+  val groupedAccountsByCustomer: Dataset[(String, Seq[AccountData])] =
+    accountDS
+      .groupByKey(account => account.customerId)
+      .mapGroups {
+        case (customerId, groupedAccounts) =>
+          customerId -> groupedAccounts.toSeq
+      }
 
+  val customerAccountOutputDS: Dataset[CustomerAccountOutput] =
+    customerDS
+      .joinWith(
+        groupedAccountsByCustomer,
+        customerDS("customerId") === groupedAccountsByCustomer("_1"),
+        "left_outer"
+      )
+      .map {
+        case (customer, accountGroup) =>
+          val accounts = Option(accountGroup).map(_._2).getOrElse(Seq.empty[AccountData])
+          val numberAccounts = accounts.length
+          val totalBalance = accounts.map(_.balance).sum
+          val averageBalance = if (numberAccounts == 0) 0.0 else totalBalance.toDouble / numberAccounts
 
+          CustomerAccountOutput(
+            customerId = customer.customerId,
+            forename = customer.forename,
+            surname = customer.surname,
+            accounts = accounts,
+            numberAccounts = numberAccounts,
+            totalBalance = totalBalance,
+            averageBalance = averageBalance
+          )
+      }
+
+  customerAccountOutputDS.show(1000, truncate = false)
+  customerAccountOutputDS.write.mode("overwrite").parquet("src/main/resources/customerAccountOutputDS.parquet")
+
+  //END GIVEN CODE
 
 }

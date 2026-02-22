@@ -3,8 +3,7 @@ package com.quantexa.assessments.scoringModel
 import com.quantexa.assessments.accounts.AccountAssessment.AccountData
 import com.quantexa.assessments.customerAddresses.CustomerAddress.AddressData
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.sql.SparkSession
-
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 /***
   * Part of the Quantexa solution is to flag high risk countries as a link to these countries may be an indication of
@@ -24,6 +23,7 @@ object ScoringModel extends App {
   val spark = SparkSession.builder().master("local[*]").appName("ScoringModel").getOrCreate()
 
   //importing spark implicits allows functions such as dataframe.as[T]
+  import spark.implicits._
 
   //Set logger level to Warn
   Logger.getRootLogger.setLevel(Level.WARN)
@@ -49,6 +49,30 @@ object ScoringModel extends App {
                            linkToBVI: Boolean
                          )
 
+  val customerDocumentDS: Dataset[CustomerDocument] =
+    spark.read.parquet("src/main/resources/customerDocument.parquet").as[CustomerDocument]
+
+  val scoringModelDS: Dataset[ScoringModel] =
+    customerDocumentDS
+      .map { customerDocument =>
+        val linkToBVI = customerDocument.address.exists { addressData =>
+          addressData.country.exists(country => country == "British Virgin Islands")
+        }
+
+        ScoringModel(
+          customerId = customerDocument.customerId,
+          forename = customerDocument.forename,
+          surname = customerDocument.surname,
+          accounts = customerDocument.accounts,
+          address = customerDocument.address,
+          linkToBVI = linkToBVI
+        )
+      }
+
+  val linkedToBVICustomerCount = scoringModelDS.filter(scoringModel => scoringModel.linkToBVI).count()
+
+  scoringModelDS.show(1000, truncate = false)
+  println(s"Number of customers linked to British Virgin Islands: $linkedToBVICustomerCount")
 
   //END GIVEN CODE
 
