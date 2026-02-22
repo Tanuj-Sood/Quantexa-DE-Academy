@@ -35,6 +35,8 @@ This will:
 3. Run `CustomerAddress`
 4. Run `ScoringModel`
 
+The runners pass `-Dqde.output.base.path=<absolute project src/main/resources path>` so reads/writes are stable regardless of your current terminal folder.
+
 ## Build and run all assessments (bash)
 
 ```bash

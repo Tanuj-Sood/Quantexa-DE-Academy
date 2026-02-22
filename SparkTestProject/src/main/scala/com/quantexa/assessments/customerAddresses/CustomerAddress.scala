@@ -59,6 +59,11 @@ object CustomerAddress extends App {
   //Set logger level to Warn
   Logger.getRootLogger.setLevel(Level.WARN)
 
+  val outputBasePath =
+    sys.props.get("qde.output.base.path")
+      .orElse(sys.env.get("QDE_OUTPUT_BASE_PATH"))
+      .getOrElse("src/main/resources")
+
   case class AddressRawData(
                              addressId: String,
                              customerId: String,
@@ -102,9 +107,9 @@ object CustomerAddress extends App {
   }
 
 
-  val addressDF: DataFrame = spark.read.option("header", "true").csv("src/main/resources/address_data.csv")
+  val addressDF: DataFrame = spark.read.option("header", "true").csv(s"$outputBasePath/address_data.csv")
 
-  val customerAccountDS = spark.read.parquet("src/main/resources/customerAccountOutputDS.parquet").as[CustomerAccountOutput]
+  val customerAccountDS = spark.read.parquet(s"$outputBasePath/customerAccountOutputDS.parquet").as[CustomerAccountOutput]
 
   val addressRawDS: Dataset[AddressRawData] = addressDF.as[AddressRawData]
 
@@ -147,8 +152,8 @@ object CustomerAddress extends App {
           )
       }
 
-  customerDocument.show(1000,false)
-  customerDocument.write.mode("overwrite").parquet("src/main/resources/customerDocument.parquet")
+  customerDocument.show(1000, truncate = false)
+  customerDocument.write.mode("overwrite").parquet(s"$outputBasePath/customerDocument.parquet")
 
   //END GIVEN CODE
 

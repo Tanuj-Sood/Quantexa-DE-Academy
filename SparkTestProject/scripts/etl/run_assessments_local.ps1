@@ -29,6 +29,8 @@ if (-not (Test-Path $sparkSubmit)) {
     throw "spark-submit not found at $sparkSubmit"
 }
 
+$outputBasePath = Join-Path $projectRoot 'src\main\resources'
+
 $classes = @(
     'com.quantexa.assessments.accounts.AccountAssessment',
     'com.quantexa.assessments.customerAddresses.CustomerAddress',
@@ -37,7 +39,7 @@ $classes = @(
 
 foreach ($className in $classes) {
     Write-Host "Running $className" -ForegroundColor Yellow
-    & $sparkSubmit --class $className --master local[*] $jarPath
+    & $sparkSubmit --class $className --master local[*] --driver-java-options "-Dqde.output.base.path=$outputBasePath" $jarPath
 }
 
 Write-Host 'Done. Parquet outputs are under src\main\resources\' -ForegroundColor Green
