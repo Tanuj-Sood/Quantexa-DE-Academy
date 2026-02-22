@@ -35,6 +35,11 @@ This will:
 3. Run `CustomerAddress`
 4. Run `ScoringModel`
 
+<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
+The runners pass `-Dqde.output.base.path=<absolute project src/main/resources path>` so reads/writes are stable regardless of your current terminal folder.
+
+=======
+>>>>>>> feature/QDE_project
 ## Build and run all assessments (bash)
 
 ```bash
@@ -50,3 +55,18 @@ The jobs write parquet outputs to:
 - `src/main/resources/customerDocument.parquet`
 
 The scoring job reads the `customerDocument.parquet` file and prints the BVI-linked customer count.
+<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
+
+
+## Windows troubleshooting
+
+If you see `Path does not exist` with a malformed path like `D:Quantexa...`, use the provided PowerShell runner.
+It normalizes the base path to forward slashes before passing `-Dqde.output.base.path` to Spark.
+
+If you see `Failed to locate the winutils binary`, run the install script again as Administrator to install and set `HADOOP_HOME`/`winutils.exe`:
+
+```powershell
+.\scripts\windows\install-qde-prereqs.ps1
+```
+=======
+>>>>>>> feature/QDE_project

@@ -47,11 +47,16 @@ object AccountAssessment extends App {
   //Set logger level to Warn
   Logger.getRootLogger.setLevel(Level.WARN)
 
+  val outputBasePath =
+    sys.props.get("qde.output.base.path")
+      .orElse(sys.env.get("QDE_OUTPUT_BASE_PATH"))
+      .getOrElse("src/main/resources")
+
   //Create DataFrames of sources
   val customerDF: DataFrame = spark.read.option("header", "true")
-    .csv("src/main/resources/customer_data.csv")
+    .csv(s"$outputBasePath/customer_data.csv")
   val accountDF = spark.read.option("header", "true")
-    .csv("src/main/resources/account_data.csv")
+    .csv(s"$outputBasePath/account_data.csv")
 
   case class CustomerData(
                            customerId: String,
@@ -118,8 +123,8 @@ object AccountAssessment extends App {
           )
       }
 
-  customerAccountOutputDS.show(1000,false)
-  customerAccountOutputDS.write.mode("overwrite").parquet("src/main/resources/customerAccountOutputDS.parquet")
+  customerAccountOutputDS.show(1000, truncate = false)
+  customerAccountOutputDS.write.mode("overwrite").parquet(s"$outputBasePath/customerAccountOutputDS.parquet")
 
   //END GIVEN CODE
 

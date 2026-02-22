@@ -28,6 +28,11 @@ object ScoringModel extends App {
   //Set logger level to Warn
   Logger.getRootLogger.setLevel(Level.WARN)
 
+  val outputBasePath =
+    sys.props.get("qde.output.base.path")
+      .orElse(sys.env.get("QDE_OUTPUT_BASE_PATH"))
+      .getOrElse("src/main/resources")
+
   case class CustomerDocument(
                                customerId: String,
                                forename: String,
@@ -50,7 +55,11 @@ object ScoringModel extends App {
                          )
 
   val customerDocumentDS: Dataset[CustomerDocument] =
+<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
+    spark.read.parquet(s"$outputBasePath/customerDocument.parquet").as[CustomerDocument]
+=======
     spark.read.parquet("src/main/resources/customerDocument.parquet").as[CustomerDocument]
+>>>>>>> feature/QDE_project
 
   val scoringModelDS: Dataset[ScoringModel] =
     customerDocumentDS
@@ -71,7 +80,11 @@ object ScoringModel extends App {
 
   val linkedToBVICustomerCount = scoringModelDS.filter(scoringModel => scoringModel.linkToBVI).count()
 
+<<<<<<< codex/follow-coding-guidelines-for-assignment-tnx4ru
+  scoringModelDS.show(1000, truncate = false)
+=======
   scoringModelDS.show(1000,false)
+>>>>>>> feature/QDE_project
   println(s"Number of customers linked to British Virgin Islands: $linkedToBVICustomerCount")
 
   //END GIVEN CODE

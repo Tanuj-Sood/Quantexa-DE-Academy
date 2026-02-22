@@ -10,8 +10,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-# "Building jar with Gradle..."
-#gradle clean jar
+echo "Building jar with Gradle..."
+gradle clean jar
 
 JAR_PATH="$(ls -t build/libs/*.jar | head -n 1)"
 if [[ -z "$JAR_PATH" ]]; then
@@ -21,6 +21,8 @@ fi
 
 echo "Using jar: $JAR_PATH"
 
+OUTPUT_BASE_PATH="$PROJECT_ROOT/src/main/resources"
+
 CLASSES=(
   "com.quantexa.assessments.accounts.AccountAssessment"
   "com.quantexa.assessments.customerAddresses.CustomerAddress"
@@ -29,7 +31,7 @@ CLASSES=(
 
 for class_name in "${CLASSES[@]}"; do
   echo "Running $class_name"
-  "$SPARK_HOME/bin/spark-submit" --class "$class_name" --master local[*] "$JAR_PATH"
+  "$SPARK_HOME/bin/spark-submit" --class "$class_name" --master local[*] --driver-java-options "-Dqde.output.base.path=$OUTPUT_BASE_PATH" "$JAR_PATH"
 done
 
 echo "Done. Parquet outputs are under src/main/resources/"

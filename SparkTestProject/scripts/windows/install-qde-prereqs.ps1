@@ -50,6 +50,13 @@ Invoke-WebRequest -Uri 'https://archive.apache.org/dist/spark/spark-2.4.8/spark-
 $innerTar = Join-Path $sparkTgzExtractDir 'spark-2.4.8-bin-hadoop2.7.tar'
 & 'C:\Program Files\7-Zip\7z.exe' x $innerTar "-o$toolsDir" -y | Out-Null
 
+
+Write-Step "Installing winutils (Hadoop 2.7)"
+$hadoopHome = Join-Path $toolsDir 'hadoop'
+$hadoopBin = Join-Path $hadoopHome 'bin'
+New-Item -Path $hadoopBin -ItemType Directory -Force | Out-Null
+Invoke-WebRequest -Uri 'https://github.com/steveloughran/winutils/raw/master/hadoop-2.7.1/bin/winutils.exe' -OutFile (Join-Path $hadoopBin 'winutils.exe')
+
 Write-Step "Setting machine environment variables"
 $javaHome = (Get-ChildItem 'C:\Program Files\Eclipse Adoptium' -Directory | Sort-Object Name -Descending | Select-Object -First 1).FullName
 if (-not $javaHome) {
@@ -58,12 +65,15 @@ if (-not $javaHome) {
 
 [System.Environment]::SetEnvironmentVariable('JAVA_HOME', $javaHome, 'Machine')
 [System.Environment]::SetEnvironmentVariable('SPARK_HOME', $sparkInstallDir, 'Machine')
+[System.Environment]::SetEnvironmentVariable('HADOOP_HOME', $hadoopHome, 'Machine')
 
 Add-ToMachinePathIfMissing "$javaHome\bin"
 Add-ToMachinePathIfMissing "$sparkInstallDir\bin"
+Add-ToMachinePathIfMissing "$hadoopBin"
 
 Write-Step "Installation complete"
 Write-Host 'Open a new PowerShell window, then verify:' -ForegroundColor Green
 Write-Host '  java -version'
 Write-Host '  gradle -v'
 Write-Host '  spark-submit --version'
+Write-Host '  where winutils'
