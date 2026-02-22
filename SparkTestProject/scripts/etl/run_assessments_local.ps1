@@ -1,3 +1,7 @@
+$env:JAVA_HOME = "D:\goldenversions\jdk8u482-b08"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+java -version
+
 $ErrorActionPreference = 'Stop'
 
 if (-not $env:SPARK_HOME) {
@@ -7,8 +11,8 @@ if (-not $env:SPARK_HOME) {
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 Set-Location $projectRoot
 
-Write-Host 'Building jar with Gradle...' -ForegroundColor Cyan
-gradle clean jar
+# Write-Host 'Building jar with Gradle...' -ForegroundColor Cyan
+# gradle clean jar
 
 $jarPath = Get-ChildItem -Path (Join-Path $projectRoot 'build\libs') -Filter '*.jar' |
     Sort-Object LastWriteTime -Descending |
