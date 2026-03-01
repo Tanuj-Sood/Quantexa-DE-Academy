@@ -59,10 +59,7 @@ object CustomerAddress extends App {
   //Set logger level to Warn
   Logger.getRootLogger.setLevel(Level.WARN)
 
-  val outputBasePath =
-    sys.props.get("qde.output.base.path")
-      .orElse(sys.env.get("QDE_OUTPUT_BASE_PATH"))
-      .getOrElse("src/main/resources")
+  val outputBasePath = "src/main/resources"
 
   case class AddressRawData(
                              addressId: String,
@@ -90,7 +87,6 @@ object CustomerAddress extends App {
                                //Addresses for this customer
                                address: Seq[AddressData]
                              )
-
 
   def addressParser(unparsedAddress: Seq[AddressData]): Seq[AddressData] = {
     unparsedAddress.map(address => {
@@ -153,66 +149,6 @@ object CustomerAddress extends App {
       }
   customerDocument.show(1000, truncate = false)
   customerDocument.write.mode("overwrite").parquet(s"$outputBasePath/customerDocument.parquet")
-
-  val addressDF: DataFrame = spark.read.option("header", "true").csv(s"$outputBasePath/address_data.csv")
-
-  val customerAccountOutputPath = s"$outputBasePath/customerAccountOutputDS.parquet"
-  val customerAccountOutputDirectory = new java.io.File(customerAccountOutputPath)
-  val customerAccountOutputFiles = Option(customerAccountOutputDirectory.listFiles()).getOrElse(Array.empty)
-  val hasCustomerAccountParquetData =
-    customerAccountOutputDirectory.exists() && customerAccountOutputFiles.exists(file => file.getName.startsWith("part-"))
-
-  require(
-    hasCustomerAccountParquetData,
-    s"Expected parquet output at $customerAccountOutputPath. Run AccountAssessment first to generate customerAccountOutputDS.parquet"
-  )
-
-  val customerAccountDS = spark.read.parquet(customerAccountOutputPath).as[CustomerAccountOutput]
-
-  val addressRawDS: Dataset[AddressRawData] = addressDF.as[AddressRawData]
-
-  val groupedAddressByCustomer: Dataset[(String, Seq[AddressData])] =
-    addressRawDS
-      .map { addressRaw =>
-        AddressData(
-          addressId = addressRaw.addressId,
-          customerId = addressRaw.customerId,
-          address = addressRaw.address,
-          number = None,
-          road = None,
-          city = None,
-          country = None
-        )
-      }
-      .groupByKey(address => address.customerId)
-      .mapGroups {
-        case (customerId, groupedAddress) =>
-          customerId -> groupedAddress.toSeq
-      }
-
-  val customerDocument: Dataset[CustomerDocument] =
-    customerAccountDS
-      .joinWith(
-        groupedAddressByCustomer,
-        customerAccountDS("customerId") === groupedAddressByCustomer("_1"),
-        "left_outer"
-      )
-      .map {
-        case (customerAccount, groupedAddress) =>
-          val unparsedAddress = Option(groupedAddress).map(_._2).getOrElse(Seq.empty[AddressData])
-
-          CustomerDocument(
-            customerId = customerAccount.customerId,
-            forename = customerAccount.forename,
-            surname = customerAccount.surname,
-            accounts = customerAccount.accounts,
-            address = addressParser(unparsedAddress)
-          )
-      }
-
-  customerDocument.show(1000, truncate = false)
-  customerDocument.write.mode("overwrite").parquet(s"$outputBasePath/customerDocument.parquet")
-
   //END GIVEN CODE
 
 

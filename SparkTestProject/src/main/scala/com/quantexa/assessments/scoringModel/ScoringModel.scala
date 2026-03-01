@@ -28,10 +28,7 @@ object ScoringModel extends App {
   //Set logger level to Warn
   Logger.getRootLogger.setLevel(Level.WARN)
 
-  val outputBasePath =
-    sys.props.get("qde.output.base.path")
-      .orElse(sys.env.get("QDE_OUTPUT_BASE_PATH"))
-      .getOrElse("src/main/resources")
+  val outputBasePath = "src/main/resources"
 
   case class CustomerDocument(
                                customerId: String,
@@ -88,6 +85,7 @@ object ScoringModel extends App {
   val linkedToBVICustomerCount = scoringModelDS.filter(scoringModel => scoringModel.linkToBVI).count()
 
   scoringModelDS.show(1000, truncate = false)
+
   println(s"Number of customers linked to British Virgin Islands: $linkedToBVICustomerCount")
 
   //END GIVEN CODE

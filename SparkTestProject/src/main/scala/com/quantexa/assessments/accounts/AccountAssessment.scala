@@ -47,10 +47,7 @@ object AccountAssessment extends App {
   //Set logger level to Warn
   Logger.getRootLogger.setLevel(Level.WARN)
 
-  val outputBasePath =
-    sys.props.get("qde.output.base.path")
-      .orElse(sys.env.get("QDE_OUTPUT_BASE_PATH"))
-      .getOrElse("src/main/resources")
+  val outputBasePath = "src/main/resources"
 
   //Create DataFrames of sources
   val customerDF: DataFrame = spark.read.option("header", "true")
@@ -75,15 +72,12 @@ object AccountAssessment extends App {
                                     customerId: String,
                                     forename: String,
                                     surname: String,
-                                    //Accounts for this customer
                                     accounts: Seq[AccountData],
-                                    //Statistics of the accounts
                                     numberAccounts: Int,
                                     totalBalance: Long,
                                     averageBalance: Double
                                   )
 
-  //Create Datasets of sources
   val customerDS: Dataset[CustomerData] = customerDF.as[CustomerData]
   val accountDS: Dataset[AccountData] = accountDF.withColumn("balance", 'balance.cast("long")).as[AccountData]
 
